@@ -1,0 +1,12 @@
+{
+  "boxAppSettings": {
+    "clientID": "4ggtal9cgevrrw6oth634f82awkj840o",
+    "clientSecret": "${BOX_CLIENT_SECRET}",
+    "appAuth": {
+      "publicKeyID": "${BOX_PUBLIC_KEY}",
+      "privateKey": "${BOX_PRIVATE_KEY}",
+      "passphrase": "${BOX_PASSPHRASE}"
+    }
+  },
+  "enterpriseID": "455328"
+}

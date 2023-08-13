@@ -1,0 +1,14 @@
+---
+meta:
+  name: workstreams-config
+  type: project
+
+workstreams:    
+- workstream_name: "testing-new-implementation"
+  track_experiment: false
+  tasks:
+  - task_finetune: "tasks.finetune_task.FinetuneTask"
+  - task_predict: "tasks.predict_task.PredictTask"
+  - task_evaluate: "tasks.evaluate_task.EvaluateTask"
+  pipelines:
+    - class_name: "pipelines.custom_model_pipeline.CustomModelPipeline"

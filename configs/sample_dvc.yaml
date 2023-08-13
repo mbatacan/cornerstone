@@ -1,0 +1,6 @@
+---
+storage_name: <remote-storage-name> # (ex. remote_storage)
+url: <s3 bucket name> # (ex. s3://dvctesting)
+endpointurl: <s3 endpoint> # (ex. https://s3.us-east.cloud-object-storage.appdomain.cloud)
+access_key_id: <key>
+secret_access_key: <key>

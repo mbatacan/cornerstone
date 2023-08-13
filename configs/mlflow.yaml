@@ -1,0 +1,15 @@
+meta:
+  name: mlflow-shared
+  type: mlflow
+
+credentials:
+
+  # MLflow Instance
+  tracking_url: "https://cao-shared-mlflow.wdc1a.ciocloud.nonprod.intranet.ibm.com/"
+  registry_url: "default" # By default, registry url is the same as the tracking url
+
+  # Artifact Storage
+  storage_type: "s3" # Currently only S3 compatibles are supported (e.g. COS)
+  s3_endpoint_url: "https://s3.us-east.cloud-object-storage.appdomain.cloud"
+  access_key_id: "${MLFLOW_ACCESS_KEY_ID}"
+  secret_access_key: "${MLFLOW_SECRET_ACCESS_KEY}"
