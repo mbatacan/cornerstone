@@ -2,8 +2,8 @@
 [tool.poetry]
 name = "[your-repo-name]"
 version = "0.1.0"
-description = "MITA Data Science Repo Template"
-authors = ["Jett Hollister <jett.hollister@ibm.com>"]
+description = "DS Repo Template"
+authors = ["Matt Batacan <mbatacan@bu.edu>"]
 packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
