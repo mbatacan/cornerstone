@@ -4,6 +4,8 @@
 
 ## Quick Start
 
+## homebrew compatibility with macOS need to look into homebrew for windows/linux
+
 To start, install the required and recommended libraries.
 
 1. Install [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)
