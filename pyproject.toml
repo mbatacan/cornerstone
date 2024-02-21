@@ -3,7 +3,7 @@
 name = "[your-repo-name]"
 version = "0.1.0"
 description = "DS Repo Template"
-authors = ["Matt Batacan <mbatacan@bu.edu>"]
+authors = ["Matt Batacan <mattbatacan@gmail.com>"]
 packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
