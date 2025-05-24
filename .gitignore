@@ -1,2 +1,43 @@
+# Environment & Dependency files
 .env
 poetry.lock
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode settings
+.vscode/
+
+# Virtual environments
+.venv/
+venv/
+
+# Data & model artifacts
+data/
+models/*.joblib
+models/*.pkl
+*.h5
+*.hdf5
+*.csv
+*.tsv
+
+# DVC cache and lock files
+*.dvc
+.dvc/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test outputs
+htmlcov/
+.coverage
+.cache/

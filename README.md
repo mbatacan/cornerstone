@@ -27,6 +27,13 @@ pre-commit install
 
 If developing in VSCode (highly recommended), add the following extensions for linting, type checking, and code formatting:
 
-- [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python): IntelliSense (Pylance), Linting, Debugging (multi-threaded, remote), Jupyter Notebooks, code 
+- [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python): IntelliSense (Pylance), Linting, Debugging (multi-threaded, remote), Jupyter Notebooks, code
 - [Ruff](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff): A Visual Studio Code extension with support for the Ruff linter.
 
+## Example: End-to-End Workflow
+
+Train a model using the provided modules:
+
+```bash
+poetry run python src/models/train_model.py
+```
