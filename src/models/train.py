@@ -12,9 +12,6 @@ def main():
     logger.info("Loading data...")
     df = load_data()
     df = add_sepal_area(df)
-    logger.info(
-        f"Data loaded successfully: cols {df.columns.tolist()}, shape {df.shape}"
-    )
     X = df.drop(columns=["target"])
     y = df["target"]
 
