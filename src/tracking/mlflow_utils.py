@@ -16,10 +16,7 @@ Usage::
 
 Standard metric names (use these consistently across projects):
     train_loss, val_loss
-    val_precision_at_k, val_recall, val_false_alarm_rate
-    val_lead_time_hours
-    val_alpha_lambda, val_rul_mae, val_rul_rmse
-    val_prognostic_horizon_hours
+    val_accuracy, val_macro_f1, val_log_loss
 """
 
 from __future__ import annotations

@@ -41,3 +41,9 @@ Thumbs.db
 htmlcov/
 .coverage
 .cache/
+
+# Tooling caches and local run output
+.ruff_cache/
+.pytest_cache/
+mlruns/
+output/

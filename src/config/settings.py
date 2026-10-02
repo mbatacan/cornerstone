@@ -22,7 +22,7 @@ from typing import Optional
 
 import yaml
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, EnvSettingsSource, SettingsConfigDict
 
 _CONFIGS_DIR = Path(__file__).resolve().parents[2] / "configs"
 
@@ -38,10 +38,10 @@ class MLflowSettings(BaseModel):
     registered_model_name: str = "ds-template-model"
 
 
-class AlertsSettings(BaseModel):
-    table_path: str = "output/alerts"  # local parquet path for dev; Delta path in prod
-    default_threshold: float = 0.5
-    default_severity: str = "warn"
+class PredictionsSettings(BaseModel):
+    output_path: str = (
+        "output/predictions"  # local parquet dir for dev; Delta path in prod
+    )
 
 
 class DataSettings(BaseModel):
@@ -78,7 +78,7 @@ class Settings(BaseSettings):
     project_name: str = "ds-template"
 
     mlflow: MLflowSettings = MLflowSettings()
-    alerts: AlertsSettings = AlertsSettings()
+    predictions: PredictionsSettings = PredictionsSettings()
     data: DataSettings = DataSettings()
     training: TrainingSettings = TrainingSettings()
 
@@ -93,21 +93,27 @@ def _load_yaml(path: Path) -> dict:
     return {}
 
 
+def _deep_merge(base: dict, override: dict) -> dict:
+    """Recursively merge ``override`` into ``base`` and return a new dict."""
+    merged = dict(base)
+    for k, v in override.items():
+        if isinstance(v, dict) and isinstance(merged.get(k), dict):
+            merged[k] = _deep_merge(merged[k], v)
+        else:
+            merged[k] = v
+    return merged
+
+
 def _build_settings() -> Settings:
-    """Build Settings by merging YAML files then env vars."""
+    """Build Settings by merging default.yaml, {env}.yaml, then env vars (highest priority)."""
     env_name = os.getenv("CORNERSTONE_ENV", "dev")
 
     defaults = _load_yaml(_CONFIGS_DIR / "default.yaml")
     overrides = _load_yaml(_CONFIGS_DIR / f"{env_name}.yaml")
+    # Init kwargs outrank env vars in pydantic-settings, so merge env values in explicitly.
+    env_values = EnvSettingsSource(Settings)()
 
-    merged: dict = {}
-    for d in (defaults, overrides):
-        for k, v in d.items():
-            if isinstance(v, dict) and isinstance(merged.get(k), dict):
-                merged[k] = {**merged[k], **v}
-            else:
-                merged[k] = v
-
+    merged = _deep_merge(_deep_merge(defaults, overrides), env_values)
     merged["env"] = env_name
     return Settings(**merged)
 

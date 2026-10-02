@@ -5,5 +5,5 @@ mlflow:
   tracking_uri: "mlruns"
   experiment_name: "/Shared/ds-template/dev/experiments"
 
-alerts:
-  table_path: "output/alerts_dev"
+predictions:
+  output_path: "output/predictions_dev"

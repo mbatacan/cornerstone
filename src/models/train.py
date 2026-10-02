@@ -17,13 +17,13 @@ from __future__ import annotations
 
 import mlflow
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import f1_score, log_loss
 from sklearn.model_selection import train_test_split
 
 from src.config.settings import get_settings
 from src.data.load_data import load_data
 from src.features.build_features import add_sepal_area
 from src.logging.logger import get_logger
-from src.monitoring.metrics import summarise_alert_performance
 from src.tracking.mlflow_utils import log_model_with_signature, start_run
 from src.utils.seed import set_all_seeds
 
@@ -75,36 +75,24 @@ def train() -> str:
         )
         clf.fit(X_train, y_train)
 
-        # Binarise for alert-style metrics (class 1 = positive)
-        y_score = clf.predict_proba(X_test)[:, 1]
         y_pred = clf.predict(X_test)
         accuracy = clf.score(X_test, y_test)
-
-        # Binarise multi-class target for alert metric demo (class 2 vs rest)
-
-        y_test_binary = (y_test == 2).astype(int).to_numpy()
-        y_score_binary = clf.predict_proba(X_test)[:, 2]
-        alert_metrics = summarise_alert_performance(
-            y_test_binary,
-            y_score_binary,
-            threshold=cfg.alerts.default_threshold,
-        )
+        macro_f1 = f1_score(y_test, y_pred, average="macro")
+        val_log_loss = log_loss(y_test, clf.predict_proba(X_test), labels=clf.classes_)
 
         mlflow.log_metrics(
             {
                 "val_accuracy": accuracy,
-                "val_precision": alert_metrics["precision"],
-                "val_recall": alert_metrics["recall"],
-                "val_false_alarm_rate": alert_metrics["false_alarm_rate"],
-                "val_f1": alert_metrics["f1"],
+                "val_macro_f1": macro_f1,
+                "val_log_loss": val_log_loss,
             }
         )
 
         logger.info(
-            "Eval — accuracy: %.3f  FAR: %.3f  recall: %.3f",
+            "Eval — accuracy: %.3f  macro-F1: %.3f  log-loss: %.3f",
             accuracy,
-            alert_metrics["false_alarm_rate"],
-            alert_metrics["recall"],
+            macro_f1,
+            val_log_loss,
         )
 
         register_name = cfg.mlflow.registered_model_name if cfg.env != "dev" else None

@@ -20,7 +20,7 @@ import typer
 
 app = typer.Typer(
     name="ds-template",
-    help="Boeing DS/MLE alerting & prognostics template CLI.",
+    help="Personal DS/ML project template CLI.",
     add_completion=False,
 )
 bundle_app = typer.Typer(help="Databricks Asset Bundle commands.")
@@ -46,21 +46,16 @@ def train(
 @app.command()
 def predict(
     env: str = typer.Option("dev", "--env", "-e", help="CORNERSTONE_ENV value."),
-    source_system: str = typer.Option("demo", "--source-system"),
-    source_asset_id: str = typer.Option("asset-001", "--asset-id"),
 ) -> None:
-    """Run the scoring pipeline and emit alerts."""
+    """Run the scoring pipeline and write predictions."""
     os.environ["CORNERSTONE_ENV"] = env
     from src.config.settings import get_settings  # noqa: PLC0415
 
     get_settings.cache_clear()
     from src.models.predict import predict as _predict  # noqa: PLC0415
 
-    n, path = _predict(
-        source_system=source_system,
-        source_asset_id=source_asset_id,
-    )
-    typer.echo(f"Predict complete: {n} alert(s) written to {path}")
+    n, path = _predict()
+    typer.echo(f"Predict complete: {n} row(s) written to {path}")
 
 
 @bundle_app.command("validate")

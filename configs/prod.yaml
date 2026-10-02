@@ -8,7 +8,5 @@ mlflow:
   experiment_name: "/Shared/ds-template/prod/experiments"
   registered_model_name: "ds-template-model"
 
-alerts:
-  table_path: "dbfs:/mnt/prod/alerts"
-  default_threshold: 0.5
-  default_severity: "warn"
+predictions:
+  output_path: "dbfs:/mnt/prod/predictions"

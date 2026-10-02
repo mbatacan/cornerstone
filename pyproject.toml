@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "ds-template"
 version = "0.1.0"
-description = "Boeing alerting & prognostics DS/MLE project template"
+description = "Personal DS/ML project template"
 authors = [{ name = "Matt Batacan", email = "mattbatacan@gmail.com" }]
 requires-python = ">=3.11"
 dependencies = [

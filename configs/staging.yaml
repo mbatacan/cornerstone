@@ -6,6 +6,5 @@ mlflow:
   experiment_name: "/Shared/ds-template/staging/experiments"
   registered_model_name: "ds-template-model-staging"
 
-alerts:
-  table_path: "dbfs:/mnt/staging/alerts"
-  default_threshold: 0.5
+predictions:
+  output_path: "dbfs:/mnt/staging/predictions"
