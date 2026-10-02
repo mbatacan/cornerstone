@@ -1,0 +1,27 @@
+# Runtime dependencies — generated from pyproject.toml [project].dependencies
+# Regenerate with: make pin
+# Install with:    pip install -r requirements.txt
+#
+# These are loose pins (no hashes) suitable for development and CI.
+# For production, pin exact versions and add --require-hashes.
+
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+scipy
+jupyterlab
+notebook
+statsmodels
+xgboost
+lightgbm
+joblib
+plotly
+mlflow
+pydantic>=2.0
+pydantic-settings>=2.0
+sqlalchemy
+pyyaml
+typer
+python-dotenv

@@ -1,0 +1,89 @@
+default:
+  image: python:3.11-slim
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  CORNERSTONE_ENV: "dev"
+
+cache:
+  paths:
+    - .cache/pip
+    - .venv/
+
+stages:
+  - lint
+  - test
+  - build
+  - validate
+
+# ---------------------------------------------------------------------------
+# Lint
+# ---------------------------------------------------------------------------
+lint:
+  stage: lint
+  script:
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install -e ".[dev]" --quiet
+    - python -m pylint src/ --fail-under=7.0
+    - python -m black --check src/ tests/
+    - python -m mypy src/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ---------------------------------------------------------------------------
+# Test
+# ---------------------------------------------------------------------------
+test:
+  stage: test
+  script:
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install -e ".[dev]" --quiet
+    - python -m pytest -m "not slow" tests/ --cov=src --cov-report=xml --cov-report=term-missing
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ---------------------------------------------------------------------------
+# Build wheel
+# ---------------------------------------------------------------------------
+build:
+  stage: build
+  script:
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install build --quiet
+    - python -m build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_TAG'
+
+# ---------------------------------------------------------------------------
+# Databricks bundle validate
+# ---------------------------------------------------------------------------
+bundle-validate:
+  stage: validate
+  script:
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install -e ".[dev]" --quiet
+    - pip install databricks-cli --quiet
+    - databricks bundle validate -t dev
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  # Requires CI/CD variable: DATABRICKS_HOST, DATABRICKS_TOKEN
+  # Set these in GitLab → Settings → CI/CD → Variables (masked, protected)
+  allow_failure: true   # remove once Databricks workspace is configured

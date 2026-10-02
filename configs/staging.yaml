@@ -1,0 +1,11 @@
+# configs/staging.yaml — Databricks staging workspace.
+# Activated when CORNERSTONE_ENV=staging.
+
+mlflow:
+  tracking_uri: "databricks"
+  experiment_name: "/Shared/ds-template/staging/experiments"
+  registered_model_name: "ds-template-model-staging"
+
+alerts:
+  table_path: "dbfs:/mnt/staging/alerts"
+  default_threshold: 0.5

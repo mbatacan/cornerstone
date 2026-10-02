@@ -1,0 +1,98 @@
+# Databricks Asset Bundle — ds-template
+#
+# Deploy with:
+#   databricks bundle validate -t dev
+#   databricks bundle deploy -t dev
+#   databricks bundle deploy -t staging    # requires DATABRICKS_HOST + DATABRICKS_TOKEN
+#   databricks bundle deploy -t prod       # manual gate; prod deploy never automated
+#
+# Docs: https://docs.databricks.com/dev-tools/bundles/index.html
+
+bundle:
+  name: ds-template
+
+# ---------------------------------------------------------------------------
+# Targets (environments)
+# ---------------------------------------------------------------------------
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: ${var.databricks_host}
+      root_path: /Users/${workspace.current_user.userName}/.bundle/ds-template/dev
+
+  staging:
+    workspace:
+      host: ${var.databricks_host}
+      root_path: /Shared/.bundle/ds-template/staging
+
+  prod:
+    workspace:
+      host: ${var.databricks_host}
+      root_path: /Shared/.bundle/ds-template/prod
+
+# ---------------------------------------------------------------------------
+# Variables
+# ---------------------------------------------------------------------------
+variables:
+  databricks_host:
+    description: "Databricks workspace URL (e.g. https://adb-<id>.azuredatabricks.net)"
+    default: ""
+  mlflow_experiment_base:
+    description: "Base MLflow experiment path"
+    default: "/Shared/ds-template"
+
+# ---------------------------------------------------------------------------
+# Resources
+# ---------------------------------------------------------------------------
+resources:
+  jobs:
+    cornerstone_train:
+      name: ds-template-train-${bundle.target}
+      tasks:
+        - task_key: train
+          python_wheel_task:
+            package_name: ds-template
+            entry_point: ds-template
+            parameters:
+              - train
+              - --env
+              - ${bundle.target}
+          libraries:
+            - whl: ./dist/ds_template-*.whl
+          new_cluster:
+            spark_version: "15.4.x-scala2.12"
+            node_type_id: Standard_DS3_v2
+            num_workers: 1
+            spark_env_vars:
+              CORNERSTONE_ENV: ${bundle.target}
+              MLFLOW_EXPERIMENT_NAME: ${var.mlflow_experiment_base}/${bundle.target}/experiments
+
+    cornerstone_score:
+      name: ds-template-score-${bundle.target}
+      tasks:
+        - task_key: predict
+          python_wheel_task:
+            package_name: ds-template
+            entry_point: ds-template
+            parameters:
+              - predict
+              - --env
+              - ${bundle.target}
+          libraries:
+            - whl: ./dist/ds_template-*.whl
+          new_cluster:
+            spark_version: "15.4.x-scala2.12"
+            node_type_id: Standard_DS3_v2
+            num_workers: 1
+            spark_env_vars:
+              CORNERSTONE_ENV: ${bundle.target}
+
+  experiments:
+    ds_template_experiment:
+      name: ${var.mlflow_experiment_base}/${bundle.target}/experiments
+
+  models:
+    ds_template_model:
+      name: ds-template-model

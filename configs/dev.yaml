@@ -1,0 +1,9 @@
+# configs/dev.yaml — local/personal dev overrides.
+# Activated when CORNERSTONE_ENV=dev (default).
+
+mlflow:
+  tracking_uri: "mlruns"
+  experiment_name: "/Shared/ds-template/dev/experiments"
+
+alerts:
+  table_path: "output/alerts_dev"

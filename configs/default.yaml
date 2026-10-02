@@ -1,0 +1,24 @@
+# configs/default.yaml — base config, applies to all environments.
+# Override any value in configs/dev.yaml, configs/staging.yaml, or configs/prod.yaml.
+# Environment variables with prefix CORNERSTONE_ take precedence over all YAML values.
+
+project_name: "ds-template"
+
+mlflow:
+  tracking_uri: "mlruns"
+  experiment_name: "/Shared/ds-template/dev/experiments"
+  registered_model_name: "ds-template-model"
+
+alerts:
+  table_path: "output/alerts"
+  default_threshold: 0.5
+  default_severity: "warn"
+
+data:
+  raw_path: "data/raw"
+  processed_path: "data/processed"
+
+training:
+  random_seed: 42
+  test_size: 0.2
+  n_estimators: 100

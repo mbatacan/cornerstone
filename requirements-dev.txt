@@ -1,0 +1,23 @@
+# Dev + runtime dependencies — generated from pyproject.toml [project.optional-dependencies].dev
+# Regenerate with: make pin
+# Install with:    pip install -r requirements-dev.txt
+#
+# Includes everything in requirements.txt plus dev tooling.
+
+-r requirements.txt
+
+pytest
+pytest-cov
+pylint
+black
+mypy
+pre-commit
+ipykernel
+mkdocs
+mkdocs-material
+mkdocs-git-revision-date-plugin
+pymdown-extensions
+mkdocs-autorefs
+types-PyYAML
+pip-tools
+build

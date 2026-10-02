@@ -1,86 +1,92 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
 name = "ds-template"
 version = "0.1.0"
-description = "A template for data science projects"
-authors = ["Matt Batacan <mattbatacan@gmail.com>"]
-packages = [{ include = "src" }]
+description = "Boeing alerting & prognostics DS/MLE project template"
+authors = [{ name = "Matt Batacan", email = "mattbatacan@gmail.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "matplotlib",
+    "seaborn",
+    "scipy",
+    "jupyterlab",
+    "notebook",
+    "statsmodels",
+    "xgboost",
+    "lightgbm",
+    "joblib",
+    "plotly",
+    "mlflow",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "sqlalchemy",
+    "pyyaml",
+    "typer",
+    "python-dotenv",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9.12"
-numpy = "*"
-pandas = "*"
-scikit-learn = "*"
-matplotlib = "*"
-seaborn = "*"
-scipy = "*"
-jupyterlab = "*"
-notebook = "*"
-statsmodels = "*"
-xgboost = "*"
-lightgbm = "*"
-joblib = "*"
-plotly = "*"
-mlflow = "*"
-pydantic = "*"
-sqlalchemy = "*"
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pylint",
+    "black",
+    "mypy",
+    "pre-commit",
+    "ipykernel",
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-git-revision-date-plugin",
+    "pymdown-extensions",
+    "mkdocs-autorefs",
+    "types-PyYAML",
+    "pip-tools",
+]
 
+[project.scripts]
+ds-template = "src.cli:app"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "*"
-pytest-cov = "*"
-pre-commit = "*"
-ruff = "*"
-bandit = "*"
-black = "*"
-flake8 = "*"
-isort = "*"
-ipykernel = "*"
-mkdocs = "*"
-mkdocs-git-revision-date-plugin = "*"
-pymdown-extensions = "*"
-mkdocs-material = "*"
-mkdocs-autorefs = "*"
-types-PyYAML = "*"
-mypy = "*"
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
 [tool.black]
-exclude = "^tests/"
 line-length = 88
 skip-string-normalization = true
+exclude = "^tests/"
 
-[tool.ruff]
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
+[tool.pylint.main]
+ignore = [".venv", "build", "dist"]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.pylint."messages control"]
+disable = [
+    "missing-module-docstring",
+    "missing-function-docstring",
+    "missing-class-docstring",
+    "too-few-public-methods",
+    "import-error",
 ]
-line-length = 88
-target-version = "py39"
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+strict = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 
 [tool.isort]
 profile = "black"
 multi_line_output = 3
 include_trailing_comma = true
-force_grid_wrap = 0
 line_length = 88

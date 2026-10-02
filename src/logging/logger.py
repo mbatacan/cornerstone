@@ -1,27 +1,84 @@
+"""Structured JSON logger factory.
+
+Each logger emits one JSON object per line to stdout, making logs easily
+parseable by Databricks log ingestion, Splunk, or any structured log sink.
+
+Usage::
+
+    from src.logging.logger import get_logger
+    logger = get_logger(__name__)
+    logger.info("Training started", extra={"run_id": run.info.run_id})
+"""
+
+from __future__ import annotations
+
 import logging
+import os
+
+
+class _JsonFormatter(logging.Formatter):
+    """Minimal JSON formatter — no external dependency on python-json-logger."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        import json
+        from datetime import datetime, timezone
+
+        payload = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+        # Merge any extra fields passed via extra={}
+        for key, val in record.__dict__.items():
+            if key not in (
+                "args",
+                "asctime",
+                "created",
+                "exc_info",
+                "exc_text",
+                "filename",
+                "funcName",
+                "id",
+                "levelname",
+                "levelno",
+                "lineno",
+                "module",
+                "msecs",
+                "message",
+                "msg",
+                "name",
+                "pathname",
+                "process",
+                "processName",
+                "relativeCreated",
+                "stack_info",
+                "thread",
+                "threadName",
+            ):
+                payload[key] = val
+        return json.dumps(payload, default=str)
 
 
 def get_logger(name: str) -> logging.Logger:
-    """
-    Creates and configures a logger with the specified name.
+    """Return a structured JSON logger for the given module name.
 
-    This function ensures that each logger is only configured once, even if called multiple times.
-    It sets up a stream handler that outputs log messages to the console with a consistent format.
-    The logger's level is set to INFO by default.
+    Each logger is only configured once even when called multiple times.
+    Log level defaults to INFO; override with the ``LOG_LEVEL`` env var.
 
     Args:
-        name (str): The name of the logger, typically __name__ of the calling module.
+        name: Logger name, typically ``__name__`` of the calling module.
 
     Returns:
-        logging.Logger: Configured logger instance.
+        Configured :class:`logging.Logger` instance.
     """
     logger = logging.getLogger(name)
-    # Only add a handler if the logger doesn't already have one
     if not logger.handlers:
         handler = logging.StreamHandler()
-        formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
-        handler.setFormatter(formatter)
+        handler.setFormatter(_JsonFormatter())
         logger.addHandler(handler)
-    # Set the logging level to INFO
-    logger.setLevel(logging.INFO)
+    level = os.getenv("LOG_LEVEL", "INFO").upper()
+    logger.setLevel(getattr(logging, level, logging.INFO))
     return logger
