@@ -1,33 +1,45 @@
-"""Reference training entrypoint.
+"""Training entrypoint skeleton.
 
-Demonstrates the full template pattern:
+The orchestration is in place; implement ``fit_model`` and ``evaluate``.
+
+Pattern:
     config load → seed → MLflow run → load data → feature engineering
     → train/eval → log metrics → log model with signature → (optionally) register
 
 Run locally::
 
-    CORNERSTONE_ENV=dev python -m src.models.train
+    CORNERSTONE_ENV=local python -m src.models.train
 
 Run via CLI::
 
     ds-template train
 """
 
-from __future__ import annotations
-
 import mlflow
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score, log_loss
+import pandas as pd
+from sklearn.base import BaseEstimator
 from sklearn.model_selection import train_test_split
 
 from src.config.settings import get_settings
 from src.data.load_data import load_data
-from src.features.build_features import add_sepal_area
+from src.features.build_features import build_features
 from src.logging.logger import get_logger
 from src.tracking.mlflow_utils import log_model_with_signature, start_run
 from src.utils.seed import set_all_seeds
 
 logger = get_logger(__name__)
+
+
+def fit_model(X_train: pd.DataFrame, y_train: pd.Series) -> BaseEstimator:
+    """Fit and return the model. Wrap preprocessing and estimator in a Pipeline."""
+    raise NotImplementedError("Implement fit_model for this project")
+
+
+def evaluate(
+    model: BaseEstimator, X_test: pd.DataFrame, y_test: pd.Series
+) -> dict[str, float]:
+    """Return metrics chosen from the business decision, keyed by metric name."""
+    raise NotImplementedError("Implement evaluate for this project")
 
 
 def train() -> str:
@@ -39,9 +51,12 @@ def train() -> str:
     cfg = get_settings()
     set_all_seeds(cfg.training.random_seed)
 
+    if cfg.mlflow.registry_uri:
+        mlflow.set_registry_uri(cfg.mlflow.registry_uri)
+
     logger.info("Loading data")
     df = load_data()
-    df = add_sepal_area(df)
+    df = build_features(df)
 
     X = df.drop(columns=["target"])
     y = df["target"]
@@ -62,45 +77,23 @@ def train() -> str:
     ) as run:
         mlflow.log_params(
             {
-                "n_estimators": cfg.training.n_estimators,
                 "test_size": cfg.training.test_size,
                 "random_seed": cfg.training.random_seed,
             }
         )
 
         logger.info("Training model")
-        clf = RandomForestClassifier(
-            n_estimators=cfg.training.n_estimators,
-            random_state=cfg.training.random_seed,
-        )
-        clf.fit(X_train, y_train)
+        model = fit_model(X_train, y_train)
 
-        y_pred = clf.predict(X_test)
-        accuracy = clf.score(X_test, y_test)
-        macro_f1 = f1_score(y_test, y_pred, average="macro")
-        val_log_loss = log_loss(y_test, clf.predict_proba(X_test), labels=clf.classes_)
+        metrics = evaluate(model, X_test, y_test)
+        mlflow.log_metrics(metrics)
+        logger.info("Eval metrics: %s", metrics)
 
-        mlflow.log_metrics(
-            {
-                "val_accuracy": accuracy,
-                "val_macro_f1": macro_f1,
-                "val_log_loss": val_log_loss,
-            }
-        )
-
-        logger.info(
-            "Eval — accuracy: %.3f  macro-F1: %.3f  log-loss: %.3f",
-            accuracy,
-            macro_f1,
-            val_log_loss,
-        )
-
-        register_name = cfg.mlflow.registered_model_name if cfg.env != "dev" else None
         model_uri = log_model_with_signature(
-            clf,
+            model,
             X_train.iloc[:5],
             artifact_path="model",
-            registered_model_name=register_name,
+            registered_model_name=cfg.mlflow.registered_model_name,
         )
 
         logger.info("Run complete: %s", run.info.run_id)

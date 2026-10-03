@@ -19,14 +19,13 @@ Standard metric names (use these consistently across projects):
     val_accuracy, val_macro_f1, val_log_loss
 """
 
-from __future__ import annotations
-
 import importlib.metadata
 import os
 import subprocess
 import sys
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Generator, Optional
+from typing import Any
 
 import mlflow
 import mlflow.sklearn
@@ -67,9 +66,9 @@ def _is_databricks() -> bool:
 def start_run(
     name: str,
     env: str = "dev",
-    tags: Optional[dict[str, str]] = None,
-    tracking_uri: Optional[str] = None,
-    experiment_name: Optional[str] = None,
+    tags: dict[str, str] | None = None,
+    tracking_uri: str | None = None,
+    experiment_name: str | None = None,
 ) -> Generator[mlflow.ActiveRun, None, None]:
     """Context manager that starts an MLflow run with standard auto-tags.
 
@@ -86,7 +85,7 @@ def start_run(
         env: Deployment environment string (dev/staging/prod).
         tags: Additional tags to set.  Merged with auto-tags; caller tags win.
         tracking_uri: Overrides MLflow tracking URI.  If not set, uses
-            ``MLFLOW_TRACKING_URI`` env var or falls back to ``"mlruns"``.
+            ``MLFLOW_TRACKING_URI`` env var or falls back to ``"sqlite:///mlflow.db"``.
         experiment_name: MLflow experiment path.  If not set, uses
             ``MLFLOW_EXPERIMENT_NAME`` env var.
 
@@ -122,7 +121,7 @@ def log_model_with_signature(
     model: Any,
     X_sample: pd.DataFrame,
     artifact_path: str = "model",
-    registered_model_name: Optional[str] = None,
+    registered_model_name: str | None = None,
 ) -> str:
     """Log a scikit-learn compatible model with an inferred signature.
 

@@ -1,0 +1,3 @@
+# src/configs/local.yaml — laptop only: sqlite MLflow, local parquet, no Databricks.
+# Activated when CORNERSTONE_ENV=local (default).
+# Everything is inherited from default.yaml.

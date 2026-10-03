@@ -1,4 +1,4 @@
-# configs/prod.yaml — Databricks production workspace.
+# src/configs/prod.yaml — Databricks production workspace.
 # Activated when CORNERSTONE_ENV=prod.
 # Secrets are injected via env vars (CORNERSTONE_DATABRICKS_TOKEN, etc.)
 # or via Databricks secret scope in the job cluster init.
@@ -6,7 +6,8 @@
 mlflow:
   tracking_uri: "databricks"
   experiment_name: "/Shared/ds-template/prod/experiments"
-  registered_model_name: "ds-template-model"
+  registry_uri: "databricks-uc"
+  registered_model_name: "ml_prod.ds_template.model"
 
 predictions:
-  output_path: "dbfs:/mnt/prod/predictions"
+  output_path: "/Volumes/ml_prod/ds_template/predictions"

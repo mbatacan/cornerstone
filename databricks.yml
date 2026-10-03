@@ -11,26 +11,40 @@
 bundle:
   name: ds-template
 
+# `databricks bundle deploy` builds the wheel itself (src/configs ships inside it).
+artifacts:
+  default:
+    type: whl
+    build: uv build --wheel
+    path: .
+
 # ---------------------------------------------------------------------------
 # Targets (environments)
 # ---------------------------------------------------------------------------
 targets:
+  # dev is not `mode: development`: that mode prefixes resource names, which would
+  # no longer match the Unity Catalog names in src/configs/dev.yaml.
   dev:
-    mode: development
     default: true
     workspace:
       host: ${var.databricks_host}
       root_path: /Users/${workspace.current_user.userName}/.bundle/ds-template/dev
+    variables:
+      catalog: ml_dev
 
   staging:
     workspace:
       host: ${var.databricks_host}
       root_path: /Shared/.bundle/ds-template/staging
+    variables:
+      catalog: ml_staging
 
   prod:
     workspace:
       host: ${var.databricks_host}
       root_path: /Shared/.bundle/ds-template/prod
+    variables:
+      catalog: ml_prod
 
 # ---------------------------------------------------------------------------
 # Variables
@@ -39,6 +53,11 @@ variables:
   databricks_host:
     description: "Databricks workspace URL (e.g. https://adb-<id>.azuredatabricks.net)"
     default: ""
+  catalog:
+    description: "Unity Catalog catalog for this target (set per target)"
+  schema:
+    description: "Unity Catalog schema holding the model and predictions"
+    default: ds_template
   mlflow_experiment_base:
     description: "Base MLflow experiment path"
     default: "/Shared/ds-template"
@@ -60,7 +79,7 @@ resources:
               - --env
               - ${bundle.target}
           libraries:
-            - whl: ./dist/ds_template-*.whl
+            - whl: ./dist/*.whl
           new_cluster:
             spark_version: "15.4.x-scala2.12"
             node_type_id: Standard_DS3_v2
@@ -81,7 +100,7 @@ resources:
               - --env
               - ${bundle.target}
           libraries:
-            - whl: ./dist/ds_template-*.whl
+            - whl: ./dist/*.whl
           new_cluster:
             spark_version: "15.4.x-scala2.12"
             node_type_id: Standard_DS3_v2
@@ -93,6 +112,13 @@ resources:
     ds_template_experiment:
       name: ${var.mlflow_experiment_base}/${bundle.target}/experiments
 
-  models:
+  schemas:
+    ds_template:
+      name: ${var.schema}
+      catalog_name: ${var.catalog}
+
+  registered_models:
     ds_template_model:
-      name: ds-template-model
+      name: model
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}

@@ -17,13 +17,13 @@ pip install ds_template-<version>-py3-none-any.whl
 
 ## Configuration
 
-Config is layered: `configs/default.yaml` → `configs/{CORNERSTONE_ENV}.yaml` →
+Config is layered: `src/configs/default.yaml` → `src/configs/{CORNERSTONE_ENV}.yaml` →
 environment variables (highest priority). Nested keys use a double underscore.
 
 | Variable | Default | Description |
 |---|---|---|
-| `CORNERSTONE_ENV` | `dev` | `dev` / `staging` / `prod` |
-| `CORNERSTONE_MLFLOW__TRACKING_URI` | `mlruns` | MLflow tracking URI |
+| `CORNERSTONE_ENV` | `local` | `local` (laptop) / `dev` / `staging` / `prod` (Databricks) |
+| `CORNERSTONE_MLFLOW__TRACKING_URI` | `sqlite:///mlflow.db` | MLflow tracking URI |
 | `CORNERSTONE_MLFLOW__REGISTERED_MODEL_NAME` | `ds-template-model` | Registry model name |
 | `CORNERSTONE_PREDICTIONS__OUTPUT_PATH` | `output/predictions` | Directory (local) or Delta path for predictions |
 | `CORNERSTONE_TRAINING__N_ESTIMATORS` | `100` | Example training hyperparameter |
@@ -40,7 +40,7 @@ CORNERSTONE_ENV=staging ds-template train
 CORNERSTONE_ENV=staging ds-template predict
 ```
 
-For prod, use the Databricks Asset Bundle jobs in `deployment/databricks.yml`
+For prod, use the Databricks Asset Bundle jobs in `databricks.yml`
 (`cornerstone_train`, `cornerstone_score`).
 
 ---

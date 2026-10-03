@@ -1,7 +1,5 @@
 """Shared pytest fixtures."""
 
-from __future__ import annotations
-
 import pytest
 
 from src.config.settings import get_settings

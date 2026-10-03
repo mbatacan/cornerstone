@@ -18,7 +18,7 @@ __pycache__/
 venv/
 
 # Data & model artifacts
-data/
+/data/
 models/*.joblib
 models/*.pkl
 *.h5
@@ -47,3 +47,4 @@ htmlcov/
 .pytest_cache/
 mlruns/
 output/
+mlflow.db

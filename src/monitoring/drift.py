@@ -6,8 +6,6 @@ A significant drift signal means the model may be operating out of
 its training distribution and should be flagged for retraining review.
 """
 
-from __future__ import annotations
-
 import numpy as np
 import pandas as pd
 from scipy import stats

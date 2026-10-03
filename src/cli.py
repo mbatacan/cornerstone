@@ -4,18 +4,18 @@ Entry point registered in pyproject.toml as ``ds-template``.
 
 Usage::
 
-    ds-template train [--env dev]
-    ds-template predict [--env dev]
+    ds-template train [--env local]
+    ds-template predict [--env local]
+    ds-template promote --version 3 [--alias champion]
     ds-template bundle validate [--target dev]
     ds-template bundle deploy --target staging
 """
-
-from __future__ import annotations
 
 import os
 import subprocess
 import sys
 
+import mlflow
 import typer
 
 app = typer.Typer(
@@ -29,7 +29,7 @@ app.add_typer(bundle_app, name="bundle")
 
 @app.command()
 def train(
-    env: str = typer.Option("dev", "--env", "-e", help="CORNERSTONE_ENV value."),
+    env: str = typer.Option("local", "--env", "-e", help="CORNERSTONE_ENV value."),
 ) -> None:
     """Run the training pipeline."""
     os.environ["CORNERSTONE_ENV"] = env
@@ -45,7 +45,7 @@ def train(
 
 @app.command()
 def predict(
-    env: str = typer.Option("dev", "--env", "-e", help="CORNERSTONE_ENV value."),
+    env: str = typer.Option("local", "--env", "-e", help="CORNERSTONE_ENV value."),
 ) -> None:
     """Run the scoring pipeline and write predictions."""
     os.environ["CORNERSTONE_ENV"] = env
@@ -56,6 +56,32 @@ def predict(
 
     n, path = _predict()
     typer.echo(f"Predict complete: {n} row(s) written to {path}")
+
+
+@app.command()
+def promote(
+    version: str = typer.Option(
+        ..., "--version", "-v", help="Model version to promote."
+    ),
+    alias: str = typer.Option(
+        None, "--alias", "-a", help="Alias; default from config."
+    ),
+    env: str = typer.Option("local", "--env", "-e", help="CORNERSTONE_ENV value."),
+) -> None:
+    """Point the model alias at a version (promotion, or rollback to an old one)."""
+    os.environ["CORNERSTONE_ENV"] = env
+    from src.config.settings import get_settings  # noqa: PLC0415
+
+    get_settings.cache_clear()
+    from src.models.registry import set_model_alias  # noqa: PLC0415
+
+    cfg = get_settings()
+    mlflow.set_tracking_uri(cfg.mlflow.tracking_uri)
+    if cfg.mlflow.registry_uri:
+        mlflow.set_registry_uri(cfg.mlflow.registry_uri)
+    alias = alias or cfg.mlflow.model_alias
+    set_model_alias(cfg.mlflow.registered_model_name, alias, version)
+    typer.echo(f"{cfg.mlflow.registered_model_name}@{alias} -> v{version}")
 
 
 @bundle_app.command("validate")

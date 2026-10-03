@@ -1,7 +1,5 @@
 """Seed utilities for reproducible experiments."""
 
-from __future__ import annotations
-
 import random
 
 import numpy as np
@@ -20,7 +18,7 @@ def set_all_seeds(seed: int = 42) -> None:
     np.random.seed(seed)
 
     try:
-        import torch
+        import torch  # ty: ignore[unresolved-import]  # optional dependency
 
         torch.manual_seed(seed)
         if torch.cuda.is_available():

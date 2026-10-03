@@ -1,8 +1,8 @@
 """Layered configuration via pydantic-settings.
 
 Load order (each layer overrides the previous):
-  1. configs/default.yaml
-  2. configs/{CORNERSTONE_ENV}.yaml
+  1. src/configs/default.yaml
+  2. src/configs/{CORNERSTONE_ENV}.yaml
   3. Environment variables prefixed with CORNERSTONE_
   4. Databricks secret scope (when running on Databricks)
 
@@ -13,18 +13,15 @@ Usage::
     print(cfg.mlflow.experiment_name)
 """
 
-from __future__ import annotations
-
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
 
 import yaml
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, EnvSettingsSource, SettingsConfigDict
 
-_CONFIGS_DIR = Path(__file__).resolve().parents[2] / "configs"
+_CONFIGS_DIR = Path(__file__).resolve().parents[1] / "configs"
 
 
 # ---------------------------------------------------------------------------
@@ -33,9 +30,11 @@ _CONFIGS_DIR = Path(__file__).resolve().parents[2] / "configs"
 
 
 class MLflowSettings(BaseModel):
-    tracking_uri: str = "mlruns"
+    tracking_uri: str = "sqlite:///mlflow.db"
     experiment_name: str = "/Shared/ds-template/dev/experiments"
-    registered_model_name: str = "ds-template-model"
+    registry_uri: str | None = None  # "databricks-uc" on Databricks
+    registered_model_name: str = "ds-template-model"  # catalog.schema.model on UC
+    model_alias: str = "champion"
 
 
 class PredictionsSettings(BaseModel):
@@ -74,7 +73,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    env: str = "dev"
+    env: str = "local"
     project_name: str = "ds-template"
 
     mlflow: MLflowSettings = MLflowSettings()
@@ -82,15 +81,14 @@ class Settings(BaseSettings):
     data: DataSettings = DataSettings()
     training: TrainingSettings = TrainingSettings()
 
-    databricks_host: Optional[str] = None
-    databricks_token: Optional[str] = None
+    databricks_host: str | None = None
+    databricks_token: str | None = None
 
 
 def _load_yaml(path: Path) -> dict:
-    if path.exists():
-        with open(path) as f:
-            return yaml.safe_load(f) or {}
-    return {}
+    """Load a YAML config file; a missing file raises ``FileNotFoundError``."""
+    with open(path) as f:
+        return yaml.safe_load(f) or {}
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
@@ -106,7 +104,7 @@ def _deep_merge(base: dict, override: dict) -> dict:
 
 def _build_settings() -> Settings:
     """Build Settings by merging default.yaml, {env}.yaml, then env vars (highest priority)."""
-    env_name = os.getenv("CORNERSTONE_ENV", "dev")
+    env_name = os.getenv("CORNERSTONE_ENV", "local")
 
     defaults = _load_yaml(_CONFIGS_DIR / "default.yaml")
     overrides = _load_yaml(_CONFIGS_DIR / f"{env_name}.yaml")

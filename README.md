@@ -4,15 +4,11 @@
 
 ## Quick Start
 
-## homebrew compatibility with macOS need to look into homebrew for windows/linux
-
-To start, install the required and recommended libraries.
-
-1. Install [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)
-2. Install dependencies:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
 ```bash
-poetry install
+uv sync
+make test
 ```
 
 ### Contributing
@@ -20,20 +16,20 @@ poetry install
 Before committing anything to the repository, set up our pre-commit hooks:
 
 ```bash
-pre-commit install
+uv run pre-commit install
 ```
 
 ### VSCode Extensions
 
 If developing in VSCode (highly recommended), add the following extensions for linting, type checking, and code formatting:
 
-- [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python): IntelliSense (Pylance), Linting, Debugging (multi-threaded, remote), Jupyter Notebooks, code
-- [Ruff](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff): A Visual Studio Code extension with support for the Ruff linter.
+- [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python): IntelliSense, debugging, Jupyter notebooks
+- [Ruff](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff): linting and formatting on save.
 
 ## Example: End-to-End Workflow
 
 Train a model using the provided modules:
 
 ```bash
-poetry run python src/models/train_model.py
+uv run ds-template train --env dev
 ```

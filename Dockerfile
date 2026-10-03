@@ -1,24 +1,21 @@
-FROM python:3.11-slim
-
+FROM python:3.11-slim AS builder
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 WORKDIR /app
 
-# Install system deps needed by some ML packages (e.g. LightGBM)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# Dependencies first for layer caching
+COPY pyproject.toml uv.lock .python-version ./
+RUN uv sync --frozen --no-dev --extra serve --no-install-project
 
-# Copy dependency files first for layer caching
-COPY requirements-dev.txt ./
+COPY src ./src
+RUN uv sync --frozen --no-dev --extra serve
 
-RUN pip install --no-cache-dir -r requirements-dev.txt
 
-# Copy project source
-COPY . .
-
-# Install the package in editable mode
-RUN pip install --no-cache-dir -e ".[dev]"
-
-# Default: start JupyterLab on port 8888
-EXPOSE 8888
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''"]
+FROM python:3.11-slim
+RUN useradd --create-home --uid 10001 app
+WORKDIR /app
+COPY --from=builder --chown=app:app /app /app
+ENV PATH="/app/.venv/bin:$PATH"
+USER app
+EXPOSE 8000
+CMD ["uvicorn", "src.serving.app:app", "--host", "0.0.0.0", "--port", "8000"]

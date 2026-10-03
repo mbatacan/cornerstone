@@ -1,0 +1,11 @@
+# src/configs/dev.yaml — Databricks dev workspace.
+# Activated when CORNERSTONE_ENV=dev.
+
+mlflow:
+  tracking_uri: "databricks"
+  experiment_name: "/Shared/ds-template/dev/experiments"
+  registry_uri: "databricks-uc"
+  registered_model_name: "ml_dev.ds_template.model"
+
+predictions:
+  output_path: "/Volumes/ml_dev/ds_template/predictions"

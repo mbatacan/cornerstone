@@ -1,13 +1,15 @@
-# configs/default.yaml — base config, applies to all environments.
-# Override any value in configs/dev.yaml, configs/staging.yaml, or configs/prod.yaml.
+# src/configs/default.yaml — base config, applies to all environments (local defaults).
+# Override any value in local.yaml, dev.yaml, staging.yaml, or prod.yaml.
 # Environment variables with prefix CORNERSTONE_ take precedence over all YAML values.
+# Shipped inside the wheel, so Databricks jobs read the same files.
 
 project_name: "ds-template"
 
 mlflow:
-  tracking_uri: "mlruns"
-  experiment_name: "/Shared/ds-template/dev/experiments"
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "ds-template-local"
   registered_model_name: "ds-template-model"
+  model_alias: "champion"
 
 predictions:
   output_path: "output/predictions"
